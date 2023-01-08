@@ -20,7 +20,7 @@ VALUES("Dexter", "Dick", 2, null),
 ("Malia", "Brown", 1, 1),
 ("Sarah", "Lourd", 4, 3),
 ("Tom", "Alan", 4, 1),
-("Karen", "Dick", 5, 1),
+("Karen", "Dick", 4, 1),
 ("Heather", "Smith", 1, 1);
 
 
