@@ -42,6 +42,12 @@ function menu() {
                 case "View all employees":
                     viewEmployees();
                     break;
+                case "Add a department":
+                    addDepartment();
+                    break;
+                case "Add a role":
+                    addRole();
+                    break;
                 default:
                 // code block
             }
@@ -86,6 +92,61 @@ function viewEmployees() {
 
 function AddEmployee() {}
 
-function updateRole() {}
+function addRole() {
+    db.query(`SELECT id, name FROM department`, (err, result) => {
+        inquirer
+            .prompt([
+                {
+                    type: "input",
+                    name: "name",
+                    message: "What is the name of the role?",
+                },
+                {
+                    type: "input",
+                    name: "salary",
+                    message: "What is the salary of the role?",
+                },
+                {
+                    type: "list",
+                    name: "department",
+                    message: "which department does the role belong to?",
+                    choices: result.map((data) => ({
+                        name: data.name,
+                        value: data.id,
+                    })),
+                },
+            ])
+            .then(({ name, salary, department }) => {
+                const params = [name, salary, department];
+                const sql =
+                    "INSERT INTO role(title,salary, department_id) VALUES(?,?,?)";
+                db.query(sql, params, (err, results) => {
+                    if (err) throw err;
+                    console.log(`Added ${params} to the database`);
+                    console.table(results);
+                    menu();
+                });
+            });
+    });
+}
 
-function addDepartment() {}
+function addDepartment() {
+    inquirer
+        .prompt([
+            {
+                type: "input",
+                name: "department",
+                message: "Enter name of the department to add?",
+            },
+        ])
+        .then((answer) => {
+            const params = answer.department;
+            const sql = "INSERT INTO department (name) VALUES(?)";
+            db.query(sql, params, (err, results) => {
+                if (err) throw err;
+                console.log(`Added ${params} to the database`);
+                console.table(results);
+                menu();
+            });
+        });
+}
