@@ -49,7 +49,7 @@ function menu() {
                     addRole();
                     break;
                 case "Add an employee":
-                    AddEmployee();
+                    addEmployee();
                     break;
                 case "Update an employee role":
                     updateRole();
@@ -82,12 +82,14 @@ function viewAllRoles() {
 }
 
 function viewEmployees() {
-    const sql = `SELECT employee.id, employee.first_name, employee.last_name, role.title, department.name as department, role.salary, CONCAT(employee.first_name, " ", employee.last_name) AS manager
-    FROM employee
-    LEFT JOIN role 
-    ON employee.role_id = role.id 
-    LEFT JOIN department
-    ON department.id = role.id
+    const sql = `SELECT e.id, e.first_name, e.last_name, r.title, d.name AS department, r.salary, CONCAT(m.first_name, ' ', m.last_name) AS manager
+    FROM employee e
+    LEFT JOIN role r
+      ON e.role_id = r.id
+    LEFT JOIN department d
+    ON d.id = r.department_id
+    LEFT JOIN employee m
+      ON m.id = e.manager_id
 `;
     db.query(sql, (err, results) => {
         if (err) throw err;
@@ -96,7 +98,7 @@ function viewEmployees() {
     });
 }
 
-function AddEmployee() {
+function addEmployee() {
     db.query(` select  title, id from role`, (err, result) => {
         db.query(
             `select * from employee where manager_id is null;`,
@@ -153,7 +155,6 @@ function AddEmployee() {
                             db.query(sql, params, (err, results) => {
                                 if (err) throw err;
                                 console.log(`Added ${params} to the database`);
-                                console.table(results);
                                 menu();
                             });
                         }
@@ -194,7 +195,6 @@ function addRole() {
                 db.query(sql, params, (err, results) => {
                     if (err) throw err;
                     console.log(`Added ${params} to the database`);
-                    console.table(results);
                     menu();
                 });
             });
@@ -216,10 +216,51 @@ function addDepartment() {
             db.query(sql, params, (err, results) => {
                 if (err) throw err;
                 console.log(`Added ${params} to the database`);
-                console.table(results);
                 menu();
             });
         });
 }
 
-function updateRole() {}
+function updateRole() {
+    db.query(
+        " SELECT first_name, last_name, id FROM employee",
+        (err, result) => {
+            db.query("SELECT id, title, salary FROM role", (err, newRole) => {
+                inquirer
+                    .prompt([
+                        {
+                            type: "list",
+                            name: "currentRole",
+                            message:
+                                "Which employee's role do you want to update?",
+                            choices: result.map((data) => ({
+                                name: data.first_name + " " + data.last_name,
+                                value: data.id,
+                            })),
+                        },
+                        {
+                            type: "list",
+                            name: "assigedRole",
+                            message:
+                                "Which role do you want to assign the selected employee?",
+                            choices: newRole.map((data) => ({
+                                name: data.title,
+                                value: data.id,
+                            })),
+                        },
+                    ])
+                    .then((data) => {
+                        console.log(data.currentRole);
+                        db.query(
+                            `UPDATE employee SET  role_id = ${data.assigedRole} WHERE id = ${data.currentRole}`,
+                            (err, result) => {
+                                if (err) throw err;
+                                console.log(`Role Updated in data database`);
+                                menu();
+                            }
+                        );
+                    });
+            });
+        }
+    );
+}
