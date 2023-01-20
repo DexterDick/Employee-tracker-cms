@@ -148,13 +148,14 @@ function addEmployee() {
                                 empManager,
                             ];
 
-                            console.log(params);
                             const sql =
                                 "INSERT INTO employee(first_name, last_name, role_id, manager_id) VALUES(?,?,?,?)";
 
                             db.query(sql, params, (err, results) => {
                                 if (err) throw err;
-                                console.log(`Added ${params} to the database`);
+                                console.log(
+                                    `Added ${empFirstName} ${empLastName} to the database`
+                                );
                                 menu();
                             });
                         }
